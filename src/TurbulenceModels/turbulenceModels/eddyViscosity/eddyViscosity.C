@@ -29,6 +29,7 @@ License
 #include "eddyViscosity.H"
 #include "fvc.H"
 #include "fvm.H"
+// #include "inferenceEngine.h"
 
 // * * * * * * * * * * * * * * * * Constructors  * * * * * * * * * * * * * * //
 
@@ -86,6 +87,24 @@ template<class BasicTurbulenceModel>
 Foam::tmp<Foam::volSymmTensorField>
 Foam::eddyViscosity<BasicTurbulenceModel>::R() const
 {
+    // std::cout<<"EDDYVISCOSITY::R-> Creating infEngine"<<std::endl;
+    // infEngine::inferenceEngine inf_engine;
+    // std::cout<<"EDDYVISCOSITY::R-> Init"<<std::endl;
+    // inf_engine.init("/opt/InfEngine/ml4turb.pt", "TorchScript", true, 1, 1);
+    // std::cout<<"EDDYVISCOSITY::R-> Getting buffer data"<<std::endl;
+    // const double* dataPtr = this->U_.internalField().cdata()->v_;
+    // std::cout<<"EDDYVISCOSITY::R-> Getting dimensions"<<std::endl;
+    // const label N = this->U_.internalField().size();  // Number of points (cells, faces, etc.)
+    // const label D = Vector<double>::nComponents;      // Should be 3 (x, y, z) for the field U
+    // const std::vector<int64_t> dims = {static_cast<int64_t>(N), static_cast<int64_t>(D)};
+    // std::cout<<"EDDYVISCOSITY::R-> Loading data"<<std::endl;
+    // inf_engine.loadData(dataPtr, dims);
+    // std::cout<<"EDDYVISCOSITY::R-> Computing inference"<<std::endl;
+    // inf_engine.compute();
+    // std::cout<<"EDDYVISCOSITY::R-> Getting results"<<std::endl;
+    // double* ml_R = inf_engine.getResults<double>();
+    // std::cout<<"EDDYVISCOSITY::R-> ML inference done in openfoam!"<<std::endl;
+
     std::cout<<"EDDYVISCOSITY::R"<<std::endl ;
     tmp<volScalarField> tk(k());
 

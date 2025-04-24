@@ -1,19 +1,10 @@
-ML4TURB_ROOT=/work/gratienj/BigData/2024/ml4turbulence/ml4turbulenceproject/cpp/ml4turbulence/build/install
-TORCH_ROOT=/work/gratienj/BigData/local/pytorch/2.0.0/libtorch
-CUDA_ROOT=/soft/irsrvsoft1/expl/eb/r11/el_8-x86_64/easybuild/software/CUDA/11.6.0
+INFERENCE_ENGINE_ROOT=/opt/InfEngine
+TORCH_ROOT=$(VIRTUAL_ENV)/lib/python3.12/site-packages/torch
+
 EXE_INC = \
     -I$(LIB_SRC)/finiteVolume/lnInclude \
     -I$(LIB_SRC)/meshTools/lnInclude \
-    -I$(ML4TURB_ROOT)/include 
 
-LIB_LIBS = \
+LIB_LIBS =  \
     -lfiniteVolume \
-    -lmeshTools \
-    -L$(ML4TURB_ROOT)/lib -lML4Turb \
-    $(TORCH_ROOT)/lib/libtorch.so \
-    -Wl,--no-as-needed,$(TORCH_ROOT)/lib/libtorch_cpu.so \
-    -Wl,--as-needed -lpthread -Wl,--no-as-needed,$(TORCH_ROOT)/lib/libtorch_cuda.so \
-    -Wl,--as-needed ${TORCH_ROOT}/lib/libc10_cuda.so $(TORCH_ROOT)/lib/libc10.so \
-    $(CUDA_ROOT)/lib64/libcudart.so $(CUDA_ROOT)/lib64/libnvToolsExt.so $(CUDA_ROOT)/lib64/libcufft.so $(CUDA_ROOT)/lib64/libcurand.so 
-    
-    #$(CUDA_ROOT)/lib64/libcublas.so $(CUDA_ROOT)/lib64/libcudnn.so 
+    -lmeshTools

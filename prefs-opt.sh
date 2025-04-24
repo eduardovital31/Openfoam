@@ -28,6 +28,6 @@ source etc/bashrc
 export WM_COMPILE_OPTION=Opt
 export WM_NCOMPPROCS=1
 export PV_PLUGIN_PATH=$FOAM_LIBBIN/paraview-5.4
-export PATH=/work/gratienj/local/Paraview/ParaView-5.11.1-MPI-Linux-Python3.9-x86_64/bin:$PATH
+export PATH=/work/vitalbre/local_installs/ParaView-5.11.1-MPI-Linux-Python3.9-x86_64/bin:$PATH
 
 #------------------------------------------------------------------------------

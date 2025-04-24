@@ -1,13 +1,14 @@
-ML4TURB_ROOT=/work/gratienj/BigData/2024/ml4turbulence/ml4turbulenceproject/cpp/ml4turbulence/build/install
+INFERENCE_ENGINE_ROOT=/opt/InfEngine
+TORCH_ROOT=$(VIRTUAL_ENV)/lib/python3.12/site-packages/torch
+
 EXE_INC = \
     -I../turbulenceModels/lnInclude \
     -I$(LIB_SRC)/finiteVolume/lnInclude \
     -I$(LIB_SRC)/meshTools/lnInclude \
     -I$(LIB_SRC)/transportModels \
-    -I$(ML4TURB_ROOT)/include 
 
 LIB_LIBS = \
     -lturbulenceModels \
     -lfiniteVolume \
     -lmeshTools \
-    -lincompressibleTransportModels
+    -lincompressibleTransportModels \

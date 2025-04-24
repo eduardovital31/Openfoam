@@ -1,6 +1,4 @@
-ML4CFD_ROOT = /work/gratienj/ML4CFD/ml4cfd/dev-master/ml4cfd/CPP/build/install
-TORCH_ROOT = /work/gratienj/BigData/local/pytorch/2.0.0/libtorch
-CUDA_ROOT = /soft/irsrvsoft1/expl/eb/r11/el_8-x86_64/easybuild/software/CUDA/11.6.0
+
 EXE_INC = \
     -I$(LIB_SRC)/finiteVolume/lnInclude \
     -I$(LIB_SRC)/fileFormats/lnInclude \
@@ -10,7 +8,6 @@ EXE_INC = \
     -I$(LIB_SRC)/dynamicMesh/lnInclude \
     -I$(LIB_SRC)/transportModels/interfaceProperties/lnInclude \
     -I$(LIB_SRC)/transportModels/twoPhaseProperties/lnInclude \
-    -I$(ML4CFD_ROOT)/include 
 
 LIB_LIBS = \
     -lfiniteVolume \
@@ -21,10 +18,3 @@ LIB_LIBS = \
     -ldynamicMesh \
     -ltwoPhaseMixture \
     -ltwoPhaseProperties 
-#    -L$(ML4CFD_ROOT)/lib -lml4cfd \
-#    $(TORCH_ROOT)/lib/libtorch.so \
-#    -Wl,--no-as-needed,$(TORCH_ROOT)/lib/libtorch_cpu.so \
-#    -Wl,--as-needed -lpthread -Wl,--no-as-needed,$(TORCH_ROOT)/lib/libtorch_cuda.so \
-#    -Wl,--as-needed ${TORCH_ROOT}/lib/libc10_cuda.so $(TORCH_ROOT)/lib/libc10.so \
-#    $(CUDA_ROOT)/lib64/libcudart.so $(CUDA_ROOT)/lib64/libnvToolsExt.so $(CUDA_ROOT)/lib64/libcufft.so $(CUDA_ROOT)/lib64/libcurand.so $(CUDA_ROOT)/lib64/libcublas.so $(CUDA_ROOT)/lib64/libcudnn.so \
-#    $(TORCH_ROOT)/lib64/libtorchsparse.so $(TORCH_ROOT)/lib64/libtorchscatter.so
