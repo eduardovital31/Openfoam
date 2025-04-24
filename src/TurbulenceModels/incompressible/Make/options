@@ -6,9 +6,13 @@ EXE_INC = \
     -I$(LIB_SRC)/finiteVolume/lnInclude \
     -I$(LIB_SRC)/meshTools/lnInclude \
     -I$(LIB_SRC)/transportModels \
+    # -I$(INFERENCE_ENGINE_ROOT)/include/infEngine \
+    # -I$(TORCH_ROOT)/include \
 
 LIB_LIBS = \
     -lturbulenceModels \
     -lfiniteVolume \
     -lmeshTools \
     -lincompressibleTransportModels \
+    # -L$(INFERENCE_ENGINE_ROOT)/lib -Wl,-rpath=$(INFERENCE_ENGINE_ROOT)/lib -linfEngine \
+    # -L$(TORCH_ROOT)/lib -Wl,-rpath=$(TORCH_ROOT)/lib -ltorch -ltorch_cpu -ltorch_cuda -lc10 -lc10_cuda

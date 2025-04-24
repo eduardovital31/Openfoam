@@ -114,9 +114,6 @@ makeRASModel(EBRSM);
 #include "Smagorinsky.H"
 makeLESModel(Smagorinsky);
 
-#include "dynamicSmagorinsky.H"
-makeLESModel(dynamicSmagorinsky);
-
 #include "WALE.H"
 makeLESModel(WALE);
 
