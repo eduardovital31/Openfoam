@@ -42,6 +42,7 @@ SourceFiles
 #define eddyViscosity_H
 
 #include "linearViscousStress.H"
+#include "inferenceEngine.h"
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
@@ -77,6 +78,8 @@ public:
     typedef typename BasicTurbulenceModel::alphaField alphaField;
     typedef typename BasicTurbulenceModel::rhoField rhoField;
     typedef typename BasicTurbulenceModel::transportModel transportModel;
+
+    mutable infEngine::inferenceEngine infEngine_;
 
 
     // Constructors
@@ -118,6 +121,12 @@ public:
 
         //- Return the turbulence kinetic energy
         virtual tmp<volScalarField> k() const = 0;
+
+
+
+        std::tuple<double*, std::vector<int64_t>, int64_t> loadData() const;
+        double* runInference(double* buffer, const std::vector<int64_t> dims) const;
+        tmp<Field<symmTensor>> convert2field (double* _MlRBuffer, const int64_t N) const;
 
         //- Return the Reynolds stress tensor
         virtual tmp<volSymmTensorField> R() const;

@@ -219,9 +219,9 @@ public:
         //- Solve the turbulence equations and correct the turbulence viscosity
         virtual void correct() = 0;
 
-        virtual bool useSGSStress() const {
-          return m_use_sgs_stress_tensor ;
-        }
+        // virtual bool useSGSStress() const {
+        //   return m_use_sgs_stress_tensor ;
+        // }
 };
 
 

@@ -27,127 +27,116 @@ License
 \*---------------------------------------------------------------------------*/
 
 #include "eddyViscosity.H"
+#include "fvCFD.H"
 #include "fvc.H"
 #include "fvm.H"
-// #include "inferenceEngine.h"
+#include "inferenceEngine.h"
 
 // * * * * * * * * * * * * * * * * Constructors  * * * * * * * * * * * * * * //
 
-template<class BasicTurbulenceModel>
-Foam::eddyViscosity<BasicTurbulenceModel>::eddyViscosity
-(
-    const word& type,
-    const alphaField& alpha,
-    const rhoField& rho,
-    const volVectorField& U,
-    const surfaceScalarField& alphaRhoPhi,
-    const surfaceScalarField& phi,
-    const transportModel& transport,
-    const word& propertiesName
-)
-:
-    linearViscousStress<BasicTurbulenceModel>
-    (
-        type,
-        alpha,
-        rho,
-        U,
-        alphaRhoPhi,
-        phi,
-        transport,
-        propertiesName
-    ),
+template <class BasicTurbulenceModel>
+Foam::eddyViscosity<BasicTurbulenceModel>::eddyViscosity(const word &type, const alphaField &alpha,
+                                                         const rhoField &rho, const volVectorField &U,
+                                                         const surfaceScalarField &alphaRhoPhi,
+                                                         const surfaceScalarField &phi,
+                                                         const transportModel &transport,
+                                                         const word &propertiesName)
+    : linearViscousStress<BasicTurbulenceModel>(type, alpha, rho, U, alphaRhoPhi, phi, transport,
+                                                propertiesName),
 
-    nut_
-    (
-        IOobject
-        (
-            IOobject::groupName("nut", alphaRhoPhi.group()),
-            this->runTime_.timeName(),
-            this->mesh_,
-            IOobject::MUST_READ,
-            IOobject::AUTO_WRITE,
-            IOobject::REGISTER
-        ),
-        this->mesh_
-    )
-{}
-
+      nut_(IOobject(IOobject::groupName("nut", alphaRhoPhi.group()), this->runTime_.timeName(), this->mesh_,
+                    IOobject::MUST_READ, IOobject::AUTO_WRITE, IOobject::REGISTER),
+           this->mesh_) {
+  std::cout << "EDDYVISCOSITY::EDDYVISCOSITY-> Initializing infEngine\n";
+  // this->infEngine_ = std::make_unique<infEngine::inferenceEngine>();
+  this->infEngine_.init("/opt/InfEngine/ml4turb.pt", "TorchScript", true, 1, 1);
+}
 
 // * * * * * * * * * * * * * * * Member Functions  * * * * * * * * * * * * * //
 
-template<class BasicTurbulenceModel>
-bool Foam::eddyViscosity<BasicTurbulenceModel>::read()
-{
-    return BasicTurbulenceModel::read();
+template <class BasicTurbulenceModel> bool Foam::eddyViscosity<BasicTurbulenceModel>::read() {
+  return BasicTurbulenceModel::read();
 }
 
+template <class BasicTurbulenceModel>
+std::tuple<double *, std::vector<int64_t>, int64_t>
+Foam::eddyViscosity<BasicTurbulenceModel>::loadData() const {
+  std::cout << "EDDYVISCOSITY::loadData-> loading data to input buffer\n";
+  tmp<volTensorField> tgradU = fvc::grad(this->U_);
+  Field<tensor> &gradU = tgradU.ref().internalFieldRef();
+  double *_buffer = gradU.data()->data();
 
-template<class BasicTurbulenceModel>
-Foam::tmp<Foam::volSymmTensorField>
-Foam::eddyViscosity<BasicTurbulenceModel>::R() const
-{
-    // std::cout<<"EDDYVISCOSITY::R-> Creating infEngine"<<std::endl;
-    // infEngine::inferenceEngine inf_engine;
-    // std::cout<<"EDDYVISCOSITY::R-> Init"<<std::endl;
-    // inf_engine.init("/opt/InfEngine/ml4turb.pt", "TorchScript", true, 1, 1);
-    // std::cout<<"EDDYVISCOSITY::R-> Getting buffer data"<<std::endl;
-    // const double* dataPtr = this->U_.internalField().cdata()->v_;
-    // std::cout<<"EDDYVISCOSITY::R-> Getting dimensions"<<std::endl;
-    // const label N = this->U_.internalField().size();  // Number of points (cells, faces, etc.)
-    // const label D = Vector<double>::nComponents;      // Should be 3 (x, y, z) for the field U
-    // const std::vector<int64_t> dims = {static_cast<int64_t>(N), static_cast<int64_t>(D)};
-    // std::cout<<"EDDYVISCOSITY::R-> Loading data"<<std::endl;
-    // inf_engine.loadData(dataPtr, dims);
-    // std::cout<<"EDDYVISCOSITY::R-> Computing inference"<<std::endl;
-    // inf_engine.compute();
-    // std::cout<<"EDDYVISCOSITY::R-> Getting results"<<std::endl;
-    // double* ml_R = inf_engine.getResults<double>();
-    // std::cout<<"EDDYVISCOSITY::R-> ML inference done in openfoam!"<<std::endl;
+  const int64_t N = gradU.size(), D = 9;
+  const std::vector<int64_t> dims = {N, D};
+  
+  // Copy buffer for ownership, so we don't have a double free or a dangling pointer if Field is deleted
+  // before Ideally, we'd have a move to transfer the buffer data ownership and safely delete Field
+  double *buffer = new double[N * D];
+  std::copy(_buffer, _buffer + N * D, buffer);
 
-    std::cout<<"EDDYVISCOSITY::R"<<std::endl ;
-    tmp<volScalarField> tk(k());
-
-    // Get list of patchField type names from k
-    wordList patchFieldTypes(tk().boundaryField().types());
-
-    // For k patchField types which do not have an equivalent for symmTensor
-    // set to calculated
-    forAll(patchFieldTypes, i)
-    {
-        if
-        (
-           !fvPatchField<symmTensor>::patchConstructorTablePtr_
-                ->contains(patchFieldTypes[i])
-        )
-        {
-            patchFieldTypes[i] = fvPatchFieldBase::calculatedType();
-        }
-    }
-
-    return volSymmTensorField::New
-    (
-        IOobject::groupName("R", this->alphaRhoPhi_.group()),
-        IOobject::NO_REGISTER,
-        ((2.0/3.0)*I)*tk() - (nut_)*devTwoSymm(fvc::grad(this->U_)),
-        patchFieldTypes
-    );
+  std::cout << "EDDYVISCOSITY::loadData-> data loaded to input buffer\n";
+  return {buffer, dims, N};
 }
 
+template <class BasicTurbulenceModel>
+double *Foam::eddyViscosity<BasicTurbulenceModel>::runInference(double *buffer,
+                                                                const std::vector<int64_t> dims) const {
 
-template<class BasicTurbulenceModel>
-void Foam::eddyViscosity<BasicTurbulenceModel>::validate()
-{
-    correctNut();
+  std::cout << "EDDYVISCOSITY::runInference-> running infEngine\n";
+  this->infEngine_.loadData(buffer, dims);
+  this->infEngine_.compute();
+
+  double* _MlRBuffer = this->infEngine_.getResults<double>();
+
+  this->infEngine_.clearInputs();
+
+  std::cout << "EDDYVISCOSITY::runInference-> inference done\n";
+
+  return _MlRBuffer;
 }
 
+template <class BasicTurbulenceModel>
+tmp<Field<symmTensor>> Foam::eddyViscosity<BasicTurbulenceModel>::convert2field(double *MlRBuffer,
+                                                                                const int64_t N) const {
+  std::cout << "EDDYVISCOSITY::convert2field-> converting buffer to field\n";
 
-template<class BasicTurbulenceModel>
-void Foam::eddyViscosity<BasicTurbulenceModel>::correct()
-{
-    std::cout<<"eddyViscosity::correct()"<<std::endl ;
-    BasicTurbulenceModel::correct();
+  // Copy buffer to prevent segFault (takeResults and transfers ownership not possible).
+  int64_t N6 = N * 6;
+
+  // build Field
+  List<symmTensor> MlRList(N);
+  for (label i = 0; i < N; ++i) {
+    MlRList[i] = symmTensor(MlRBuffer[6 * i + 0], MlRBuffer[6 * i + 1], MlRBuffer[6 * i + 2],
+                            MlRBuffer[6 * i + 3], MlRBuffer[6 * i + 4], MlRBuffer[6 * i + 5]);
+  }
+  Field<symmTensor> MlRInternalField(std::move(MlRList));
+  tmp<Field<symmTensor>> tMlRInternalField(new Field<symmTensor>(std::move(MlRInternalField)));
+
+  // Info << "EDDYVISCOSITY::convert2field-> Field first element: " << tMlRInternalField.ref()[0] << Foam::nl;
+  std::cout << "EDDYVISCOSITY::convert2field-> buffer converted to field\n";
+
+  return tMlRInternalField;
 }
 
+template <class BasicTurbulenceModel>
+Foam::tmp<Foam::volSymmTensorField> Foam::eddyViscosity<BasicTurbulenceModel>::R() const {
+  auto [buffer, dims, N] = loadData();
+  double *_MlRBuffer = runInference(buffer, dims);
+  tmp<Field<symmTensor>> tMlRInternalField = convert2field(_MlRBuffer, N);
+
+  auto result = volSymmTensorField::New(IOobject::groupName("R", this->alphaRhoPhi_.group()),
+                                        IOobject::NO_REGISTER, this->mesh_, dimensionSet(0, 2, -2, 0, 0),
+                                        tMlRInternalField(), fvPatchFieldBase::calculatedType());
+
+  return result;
+}
+
+template <class BasicTurbulenceModel> void Foam::eddyViscosity<BasicTurbulenceModel>::validate() {
+  correctNut();
+}
+
+template <class BasicTurbulenceModel> void Foam::eddyViscosity<BasicTurbulenceModel>::correct() {
+  BasicTurbulenceModel::correct();
+}
 
 // ************************************************************************* //

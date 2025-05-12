@@ -12,8 +12,9 @@ EXE_INC = \
     -I$(LIB_SRC)/thermophysicalModels/solidThermo/lnInclude \
     -I$(LIB_SRC)/thermophysicalModels/solidSpecie/lnInclude \
     -I$(LIB_SRC)/thermophysicalModels/thermophysicalProperties/lnInclude \
-    # -I$(INFERENCE_ENGINE_ROOT)/include/infEngine \
-    # -I$(TORCH_ROOT)/include \
+    -I$(INFERENCE_ENGINE_ROOT)/include/infEngine \
+    -I$(TORCH_ROOT)/include \
+    -DUSE_TORCH
 
 LIB_LIBS = \
     -lcompressibleTransportModels \
@@ -25,5 +26,5 @@ LIB_LIBS = \
     -lsolidSpecie \
     -lturbulenceModels \
     -lspecie \
-    # -L$(INFERENCE_ENGINE_ROOT)/lib -Wl,-rpath=$(INFERENCE_ENGINE_ROOT)/lib -linfEngine \
-    # -L$(TORCH_ROOT)/lib -Wl,-rpath=$(TORCH_ROOT)/lib -ltorch -ltorch_cpu -ltorch_cuda -lc10 -lc10_cuda
+    -L$(INFERENCE_ENGINE_ROOT)/lib -Wl,-rpath=$(INFERENCE_ENGINE_ROOT)/lib -linfEngine \
+    -L$(TORCH_ROOT)/lib -Wl,-rpath=$(TORCH_ROOT)/lib -ltorch -ltorch_cpu -ltorch_cuda -lc10 -lc10_cuda
