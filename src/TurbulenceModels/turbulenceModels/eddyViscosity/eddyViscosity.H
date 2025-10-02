@@ -73,6 +73,43 @@ protected:
         virtual void correctNut() = 0;
 
 
+    // Scaling
+
+        mutable std::vector<double> scaler_X_max_abs_;
+        mutable std::vector<double> scaler_y_max_abs_;
+        mutable bool scalers_loaded_;
+
+        void loadScalers() const;
+        void normalizeInput(double* buffer, const std::vector<int64_t>& dims) const;
+        void denormalizeOutput(double* buffer, const int64_t N) const;
+        void writeTensorDebugCompact(const volSymmTensorField& R) const;
+        // Fonctions de debug
+        void writeInputBeforeNormalization(const double* buffer, const std::vector<int64_t>& dims) const;
+        void writeInputAfterNormalization(const double* buffer, const std::vector<int64_t>& dims) const;
+        void writeModelOutput(const double* buffer, const int64_t N) const;
+        void writeVelocityDebug(const volVectorField& U) const;
+        void writeGradientComponents(const volTensorField& gradU) const;
+
+        void writeModelOutputCompactBeforeDenormalization(const double* buffer, int64_t N) const;
+        void writeModelOutputCompactAfterDenormalization(const double* buffer, int64_t N) const;
+
+
+        //- Debug parallel information (processors, mesh distribution)
+        void debugParallelInfo() const;
+
+
+        //- Write parallel-specific debug data for each processor
+        void writeParallelDebugData(const double* buffer, 
+                                   const std::vector<int64_t>& dims) const;
+
+        //- Compare ML results across processors
+        void compareResultsAcrossProcessors(const double* buffer, int64_t N) const;
+
+        //- Broadcast scalers to all processors
+        void broadcastScalers() const;  // NOUVELLE FONCTION
+
+
+
 public:
 
     typedef typename BasicTurbulenceModel::alphaField alphaField;
